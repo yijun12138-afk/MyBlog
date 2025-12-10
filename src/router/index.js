@@ -7,13 +7,13 @@ import About from '../views/About.vue'
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/blog', name: 'Blog', component: Blog },
-  { path: '/blog/:id', name: 'PostDetail', component: PostDetail }, // 动态路由
+  { path: '/blog/:id', name: 'PostDetail', component: PostDetail },
   { path: '/about', name: 'About', component: About }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes : routes
 })
 
 export default router

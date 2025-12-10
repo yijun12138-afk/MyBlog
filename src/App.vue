@@ -10,7 +10,7 @@
       </nav>
     </header>
 
-    <!-- 路由视图 (带有淡入淡出效果) -->
+    <!-- 路由视图  -->
     <main class="main-content">
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
@@ -19,7 +19,6 @@
       </router-view>
     </main>
 
-    <!-- 页脚 -->
     <footer class="footer">
       <p>&copy; 2025 Written with ❤️ by Me.</p>
     </footer>
@@ -37,10 +36,9 @@
 }
 
 body {
-  /* 背景色：温暖的米白色 */
   background-color: #f9f7f2; 
   color: #2c3e50;
-  font-family: 'Nunito', sans-serif; /* 正文用无衬线 */
+  font-family: 'Nunito', sans-serif;
   line-height: 1.6;
 }
 
@@ -95,7 +93,7 @@ body {
 }
 
 .main-content {
-  flex: 1; /* 让内容区撑开高度 */
+  flex: 1; 
   padding: 40px 0;
 }
 
@@ -107,7 +105,6 @@ body {
   border-top: 1px solid rgba(0,0,0,0.05);
 }
 
-/* 页面切换动画 */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.4s ease, transform 0.4s ease;

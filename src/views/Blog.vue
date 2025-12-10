@@ -9,7 +9,6 @@
           placeholder="搜索文章标题..."
         />
       </div>
-
       <div class="action-buttons">
         <transition name="fade">
           <button
@@ -37,7 +36,7 @@
     </div>
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
-      正在从云端加载数据...
+      正在加载数据...
     </div>
     <div v-else class="post-list">
       <transition-group name="list">
@@ -64,7 +63,6 @@
           </div>
         </article>
       </transition-group>
-      <!-- 空状态提示 -->
       <div v-if="filteredPosts.length === 0" class="empty-state">
         没有找到相关文章。
       </div>
@@ -99,47 +97,44 @@ import { ref, computed, onMounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 
-// --- 状态定义 ---
 const router = useRouter();
 const posts = ref([]); // 文章列表数据
 const loading = ref(true); // 加载状态
 const searchQuery = ref(""); // 搜索词
 const showCreateModal = ref(false); // 弹窗显示状态
 const newPost = ref({ title: "", body: "" }); // 新文章表单
-
-// 【核心状态】存放所有被勾选的文章 ID
-const selectedIds = ref([]);
+const selectedIds = ref([]);// 存放所有被勾选的文章 ID
 
 const API = "https://jsonplaceholder.typicode.com/posts";
 
-// --- 1. 获取数据 (Read) ---
+// 获取数据
 const fetchPosts = async () => {
   try {
     const res = await axios.get(API);
-    // 数据太多只选了前十五个
     posts.value = res.data.slice(0, 15);
   } catch (error) {
     alert("数据加载失败！");
   } finally {
-    loading.value = false;// 无论成功失败，最后都要把加载动画关掉
+    loading.value = false; 
   }
 };
 
-// --- 2. 搜索过滤 (Computed) ---
+// 搜索过滤
 const filteredPosts = computed(() => {
   return posts.value.filter((post) =>
     post.title.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
 
-// --- 3. 全选逻辑 (Computed & Methods) ---
-// 判断当前筛选出的列表是否全部被选中
+// 判断是否全选
 const isAllSelected = computed(() => {
+  //如果列表是空的
   if (filteredPosts.value.length === 0) return false;
   return filteredPosts.value.every((post) =>
     selectedIds.value.includes(post.id)
   );
 });
+//切换全选状态
 const toggleSelectAll = () => {
   if (isAllSelected.value) {
     selectedIds.value = [];
@@ -147,9 +142,7 @@ const toggleSelectAll = () => {
     selectedIds.value = filteredPosts.value.map((p) => p.id);
   }
 };
-
-// --- 4. 批量删除逻辑 (Batch Delete) ---
-//JSONPlaceholder 这个公共测试接口,只提供了基于单个 ID 的 DELETE /posts/:id 接口
+//批量删除
 const batchDelete = async () => {
   const count = selectedIds.value.length;
   if (!confirm(`确定要删除选中的 ${count} 篇文章吗？`)) return;
@@ -157,7 +150,9 @@ const batchDelete = async () => {
     const deletePromises = selectedIds.value.map((id) =>
       axios.delete(`${API}/${id}`)
     );
+    //并发执行
     await Promise.all(deletePromises);
+    //过滤
     posts.value = posts.value.filter(
       (post) => !selectedIds.value.includes(post.id)
     );
@@ -168,24 +163,18 @@ const batchDelete = async () => {
     alert("批量删除失败");
   }
 };
-
-// --- 5. 单个删除逻辑 (Delete) ---
+//单个删除
 const deletePost = async (id) => {
   if (!confirm("确定要删除这篇文章吗？")) return;
-
   try {
     await axios.delete(`${API}/${id}`);
-
-    // 从列表移除
     posts.value = posts.value.filter((p) => p.id !== id);
-    // 如果删除的刚好是被选中的，也要从 selectedIds 里移除，防止计数错误
     selectedIds.value = selectedIds.value.filter((sid) => sid !== id);
   } catch (error) {
     alert("删除失败");
   }
 };
-
-// --- 6. 发布文章逻辑 (Create) ---
+//发布文章
 const createPost = async () => {
   if (!newPost.value.title || !newPost.value.body) return alert("请填写完整");
 
@@ -195,18 +184,12 @@ const createPost = async () => {
       body: newPost.value.body,
       userId: 1,
     });
-
-    // 【重要】因为是假接口，服务器返回的ID总是101。
-    // 为了防止前端列表里的ID重复（导致删除出错），我们用 Date.now() 造一个假的时间戳ID。
-    //因为 JSONPlaceholder 无论发布什么，返回的 ID 都是 101。如果在列表里有多个 ID 为 101 的文章，
-    // Vue 的渲染 (v-for key) 会报错，删除功能也会乱套（删一个把其他的也删了）。
-    // 用时间戳可以保证 ID 唯一
+    // 防止ID重复
     const fPost = { ...res.data, id: Date.now() };
 
-     // unshift 把新文章加到数组的最前面
     posts.value.unshift(fPost);
 
-    // 关闭弹窗并清空
+    // 重置
     showCreateModal.value = false;
     newPost.value = { title: "", body: "" };
     alert("发布成功");
@@ -215,13 +198,13 @@ const createPost = async () => {
   }
 };
 
-// --- 7. 跳转详情页 ---
+//跳转
 const goToDetail = (id) => {
   router.push(`/blog/${id}`);
 };
 
-// 页面加载时自动拉取数据
 onMounted(fetchPosts);
+
 </script>
 
 <style scoped>
@@ -263,7 +246,6 @@ onMounted(fetchPosts);
   box-shadow: 0 0 0 3px rgba(62, 142, 65, 0.1);
 }
 
-/* 按钮组 */
 .action-buttons {
   display: flex;
   gap: 10px;
@@ -286,7 +268,6 @@ onMounted(fetchPosts);
   background: #3e8e41;
 }
 
-/* 红色批量删除按钮 */
 .btn-batch-delete {
   background: #e53935;
   color: white;
@@ -305,7 +286,6 @@ onMounted(fetchPosts);
   background: #c62828;
 }
 
-/* 全选控制栏 */
 .selection-bar {
   margin-bottom: 15px;
   padding-left: 10px;
@@ -329,7 +309,6 @@ onMounted(fetchPosts);
   cursor: pointer;
 }
 
-/* 加载状态 */
 .loading-state {
   text-align: center;
   padding: 50px;
@@ -344,7 +323,7 @@ onMounted(fetchPosts);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
   border: 1px solid rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-  display: flex; 
+  display: flex;
   align-items: flex-start;
 }
 .post-card.is-selected {
@@ -356,22 +335,20 @@ onMounted(fetchPosts);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
 }
 
-/* 复选框包裹层 */
 .checkbox-wrapper {
   margin-right: 15px;
-  padding-top: 5px; /* 对齐标题 */
+  padding-top: 5px;
 }
 
 .checkbox-wrapper input {
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: #3e8e41; /* 选中时的颜色 */
+  accent-color: #3e8e41;
 }
 
-/* 卡片内容区 */
 .card-content {
-  flex: 1; /* 占满剩余空间 */
+  flex: 1;
 }
 
 .post-title {
@@ -429,7 +406,7 @@ onMounted(fetchPosts);
   transform: translateX(30px);
 }
 
-/* 按钮淡入淡出动画 */
+/* 按钮动画 */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s;
@@ -439,7 +416,6 @@ onMounted(fetchPosts);
   opacity: 0;
 }
 
-/* 弹窗样式 */
 .modal-overlay {
   position: fixed;
   top: 0;

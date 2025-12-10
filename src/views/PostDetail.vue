@@ -5,20 +5,15 @@
       <p>正在加载...</p>
     </div>
     <div v-else-if="post" class="content-wrapper">
-      
-      <!-- 顶部操作栏 -->
       <div class="action-bar">
         <button class="btn-back" @click="$router.back()">← 返回列表</button>
-        <!-- 切换编辑模式按钮 -->
         <button class="btn-edit" @click="toggleEditMode">
           {{ isEditing ? '取消编辑' : '编辑文章' }}
         </button>
       </div>
-
       <div v-if="!isEditing" class="read-mode">
         <span class="category-tag">个人博客</span>
         <h1 class="title">{{ post.title }}</h1>
-        
         <div class="meta">
           <div class="author-info">
             <div class="avatar-circle">{{ post.userId }}</div>
@@ -38,9 +33,7 @@
           <button class="btn-save" @click="savePost">保存修改</button>
         </div>
       </div>
-
-      <hr class="divider" />
-
+      <hr class="divider"/>
       <div class="comments-section">
         <h3 class="comments-header">
           评论 ({{ comments.length }})
@@ -70,15 +63,13 @@ import { useRoute } from 'vue-router'
 import axios from 'axios'
 
 const route = useRoute()
-const loading = ref(true)
-const post = ref(null)
+const loading = ref(true)//加载状态
+const post = ref(null)//文章详细数据
 const comments = ref([]) // 存放评论数据
+const isEditing = ref(false)//编辑模式状态
+const editForm = reactive({ title: '', body: '' })//编辑表单数据
 
-// 编辑相关状态
-const isEditing = ref(false)
-const editForm = reactive({ title: '', body: '' })
-
-// 初始化加载
+// 初始化
 onMounted(async () => {
   const id = route.params.id
   try {
@@ -104,22 +95,19 @@ const toggleEditMode = () => {
   isEditing.value = !isEditing.value
 }
 
-// 保存修改 (PUT)
+// 保存修改
 const savePost = async () => {
   try {
     const id = post.value.id
-    // 调用 PUT 接口
     const res = await axios.put(`https://jsonplaceholder.typicode.com/posts/${id}`, {
       id: id,
       title: editForm.title,
       body: editForm.body,
       userId: post.value.userId
     })
-
-    // 更新本地视图
     post.value = res.data
     isEditing.value = false
-    alert('修改成功！(已模拟发送 PUT 请求)')
+    alert('修改成功！')
   } catch (e) {
     alert('修改失败')
   }
@@ -141,7 +129,6 @@ const savePost = async () => {
   padding: 40px;
 }
 
-/* 顶部操作栏 */
 .action-bar {
   display: flex;
   justify-content: space-between;
@@ -171,7 +158,7 @@ const savePost = async () => {
   background: #bbdefb;
 }
 
-/* 阅读模式样式 */
+/* 阅读模式 */
 .category-tag {
   color: #3e8e41;
   font-weight: 800;
@@ -322,7 +309,6 @@ const savePost = async () => {
   margin: 0;
 }
 
-/* 加载动画 */
 .loading-state {
   text-align: center;
   padding: 100px 0;
